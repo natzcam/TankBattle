@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tankbattle;
+package nac.tankbattle;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTile;
@@ -19,7 +19,7 @@ public class MapUtil {
 
   public static List<Block> getBlocks(TankGame game, TiledMap map){
     List<Block> blocks = new ArrayList<>();
-    TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().getLayer("objects");
+    TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get("objects");
     System.out.println(layer);
     for(int i = 0; i < layer.getWidth(); i++){
       for(int j = 0; j < layer.getHeight(); j++){

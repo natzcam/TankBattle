@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tankbattle;
+package nac.tankbattle;
 
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -53,7 +53,7 @@ public class Tank implements Entity {
     projectedBounds = new Rectangle(x, y, BOUNDS_WIDTH, BOUNDS_HEIGHT);
 
     MOVE = new Animation(0.2f, Resources.TEXTURES_TANK_MOVE);
-    MOVE.setPlayMode(Animation.LOOP);
+    MOVE.setPlayMode(Animation.PlayMode.LOOP);
     FIRE = new Animation(0.2f, Resources.TEXTURES_TANK_FIRE);
     STAND = new Animation(0.2f, Resources.TEXTURES_TANK_FIRE[2]);
     EXPLODE = new Animation(0.2f, Resources.TEXTURES_EXPLOSION);
@@ -133,7 +133,7 @@ public class Tank implements Entity {
   }
 
   @Override
-  public void render(GL10 gl, float delta) {
+  public void render(GL20 gl, float delta) {
     animTime += delta;
     TextureRegion region = animation.getKeyFrame(animTime);
     batch.draw(region, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);

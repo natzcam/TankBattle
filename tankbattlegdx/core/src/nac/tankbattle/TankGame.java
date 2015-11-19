@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tankbattle;
+package nac.tankbattle;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Files;
@@ -11,10 +11,9 @@ import com.badlogic.gdx.Graphics;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
-import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -28,10 +27,10 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.esotericsoftware.kryo.Kryo;
-import com.esotericsoftware.kryonet.Client;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.esotericsoftware.kryonet.Client;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +39,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import tankbattle.net.InputMessage;
-import tankbattle.net.InputMessageType;
-import tankbattle.net.TankMessage;
-import tankbattle.net.TankMessageType;
+import nac.tankbattle.net.InputMessage;
+import nac.tankbattle.net.InputMessageType;
+import nac.tankbattle.net.TankMessage;
+import nac.tankbattle.net.TankMessageType;
 
 public class TankGame implements ApplicationListener {
 
@@ -170,7 +169,7 @@ public class TankGame implements ApplicationListener {
     spriteBatch = new SpriteBatch();
     camera = new OrthographicCamera(WIDTH, HEIGHT);
     map = new TmxMapLoader().load("data/map.tmx");
-    TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().getLayer("background");
+    TiledMapTileLayer layer = (TiledMapTileLayer) map.getLayers().get("background");
     mapBounds = new Rectangle(0, 0, layer.getWidth() * layer.getTileWidth(), layer.getHeight() * layer.getTileHeight());
     mapRenderer = new OrthogonalTiledMapRenderer(map);
     shapeRenderer = new ShapeRenderer();
@@ -232,8 +231,8 @@ public class TankGame implements ApplicationListener {
     //clear
     Graphics graphics = Gdx.graphics;
     float delta = graphics.getDeltaTime();
-    GL10 gl = graphics.getGL10();
-    gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+    GL20 gl = graphics.getGL20();
+    gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
     //camera
     camera.position.set(me.position.x, me.position.y, 0);
     camera.update();
@@ -289,13 +288,13 @@ public class TankGame implements ApplicationListener {
         Rectangle entBounds2 = entity2.getBounds();
 
         if (entity1.isActive() && entity2.isActive()) {
-          if (Intersector.intersectRectangles(entProjBounds1, entProjBounds2)) {
+          if (Intersector.intersectRectangles(entProjBounds1, entProjBounds2, new Rectangle())) {
             entity1.willCollideWith(entity2);
             entity2.willCollideWith(entity1);
           }
         }
         if (entity1.isActive() && entity2.isActive()) {
-          if (Intersector.intersectRectangles(entBounds1, entBounds2)) {
+          if (Intersector.intersectRectangles(entBounds1, entBounds2, new Rectangle())) {
             entity1.collidedWith(entity2);
             entity2.collidedWith(entity1);
           }
@@ -381,23 +380,5 @@ public class TankGame implements ApplicationListener {
 
   @Override
   public void dispose() {
-  }
-
-  public static void main(String[] args) {
-    String h = "localhost";
-    Object[] options = {"Yes",
-      "No"};
-    int n = JOptionPane.showOptionDialog(null, "Run as server", "Tanke Tanke",
-            JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[1]);
-    if (n == 1) {
-      h = JOptionPane.showInputDialog("Host: ", "localhost");
-    }
-    LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
-    cfg.title = "Tanke Tanke";
-    cfg.useGL20 = false;
-    cfg.width = TankGame.WIDTH;
-    cfg.height = TankGame.HEIGHT;
-    cfg.addIcon("data/icon.png", Files.FileType.Internal);
-    LwjglApplication lwjglApplication = new LwjglApplication(new TankGame(n == 0, h), cfg);
   }
 }

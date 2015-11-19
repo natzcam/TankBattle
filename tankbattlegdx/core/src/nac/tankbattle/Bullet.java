@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package tankbattle;
+package nac.tankbattle;
 
-import com.badlogic.gdx.graphics.GL10;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -15,43 +15,38 @@ import com.badlogic.gdx.math.Vector2;
  *
  * @author nathaniel
  */
-public class Block implements Entity {
+public class Bullet implements Entity {
 
   public static final int TEXTURE_WIDTH = 32;
   public static final int TEXTURE_HEIGHT = 32;
   public static final int TEXTURE_OFFSET = 16;
-  public static final int BOUNDS_WIDTH = 32;
-  public static final int BOUNDS_HEIGHT = 32;
-  public static final int BOUNDS_OFFSET = 16;
-  final TextureRegion BLOCK_NORMAL;
-  final TextureRegion BLOCK_DAMAGED_1;
-  final TextureRegion BLOCK_DAMAGED_2;
-  final TextureRegion BLOCK_DAMAGED_3;
+  public static final int BOUNDS_WIDTH = 4;
+  public static final int BOUNDS_HEIGHT = 4;
+  public static final int BOUNDS_OFFSET = 2;
+  final TextureRegion BULLET_TEXTURE;
   final Animation EXPLODE;
   final TankGame game;
-  final SpriteBatch spriteBatch;
+  final SpriteBatch batch;
   Vector2 position;
   Vector2 velocity;
   float rotation = 360f;
-  float animTime = 0;
-  int hp = 4;
   Rectangle bounds;
   Rectangle projectedBounds;
   boolean visible = true;
   boolean active = true;
+  boolean hit = false;
+  float animTime = 0;
+  Tank owner;
 
-  public Block(TankGame game, TextureRegion[] textures, float x, float y) {
+  public Bullet(TankGame game, Tank owner, float x, float y) {
+    this.owner = owner;
     this.game = game;
-    spriteBatch = game.spriteBatch;
+    batch = game.spriteBatch;
     position = new Vector2(x, y);
     velocity = new Vector2(0, 0);
     bounds = new Rectangle(x, y, BOUNDS_WIDTH, BOUNDS_HEIGHT);
     projectedBounds = new Rectangle(x, y, BOUNDS_WIDTH, BOUNDS_HEIGHT);
-
-    BLOCK_NORMAL = textures[0];
-    BLOCK_DAMAGED_1 = textures[1];
-    BLOCK_DAMAGED_2 = textures[2];
-    BLOCK_DAMAGED_3 = textures[3];
+    BULLET_TEXTURE = Resources.TEXTURES_BULLET[0];
     EXPLODE = new Animation(0.2f, Resources.TEXTURES_EXPLOSION);
   }
 
@@ -70,36 +65,20 @@ public class Block implements Entity {
     position.add(velocity);
     bounds.x = position.x - BOUNDS_OFFSET;
     bounds.y = position.y - BOUNDS_OFFSET;
-    velocity.set(0, 0);
   }
 
   @Override
-  public void render(GL10 gl, float delta) {
-    if (hp <= 0) {
+  public void render(GL20 gl, float delta) {
+    if (hit) {
       animTime += delta;
       TextureRegion region = EXPLODE.getKeyFrame(animTime);
-      spriteBatch.draw(region, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
+      batch.draw(region, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
       if (EXPLODE.isAnimationFinished(animTime)) {
         visible = false;
         game.removeEntity(this);
       }
     } else {
-      switch (hp) {
-        case 4:
-          spriteBatch.draw(BLOCK_NORMAL, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
-          break;
-        case 3:
-          spriteBatch.draw(BLOCK_DAMAGED_1, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
-          break;
-        case 2:
-          spriteBatch.draw(BLOCK_DAMAGED_2, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
-          break;
-        case 1:
-          spriteBatch.draw(BLOCK_DAMAGED_3, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
-          break;
-        default:
-          spriteBatch.draw(BLOCK_NORMAL, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
-      }
+      batch.draw(BULLET_TEXTURE, position.x - TEXTURE_OFFSET, position.y - TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_OFFSET, TEXTURE_WIDTH, TEXTURE_HEIGHT, 1, 1, rotation);
     }
   }
 
@@ -117,9 +96,14 @@ public class Block implements Entity {
 
   @Override
   public void collidedWith(Entity otherEntity) {
-    if (otherEntity instanceof Bullet) {
-      hp--;
-      if (hp <= 0) {
+    if (otherEntity instanceof Block) {
+      hit = true;
+      active = false;
+    }
+    if (otherEntity instanceof Tank) {
+      Tank t = (Tank) otherEntity;
+      if (t != owner) {
+        hit = true;
         active = false;
       }
     }
@@ -127,6 +111,10 @@ public class Block implements Entity {
 
   @Override
   public void willCollideWith(Entity otherEntity) {
+    if (otherEntity == null) {
+      hit = true;
+      active = false;
+    }
   }
 
   @Override
